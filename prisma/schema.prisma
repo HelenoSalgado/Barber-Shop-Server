@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+//const dotenv = require('dotenv/config'); 
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id         Int         @id @default(autoincrement())
+  nome       String
+  loja       String
+  preco      String
+  descricao  String
+  agendamentos           Scheduling[]            
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("servico")
+}
+
+model Scheduling {
+  id         String      @id @default(cuid())
+  data       String
+  hora       String
+  usuario    User        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId  String      @unique
+  servico    Service[]   
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("agendamento")
+}
+
+model User {
+  id          String      @id @default(cuid())
+  nome        String
+  email       String      @unique
+  telefone    String
+  senha       String
+  agendamento Scheduling?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("usuario")
+}
+
