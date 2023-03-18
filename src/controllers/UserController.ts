@@ -2,23 +2,26 @@ import prisma from '../database/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'; 
-import processDataUser from '../helpers/processDataUser';
+import processDataUser from '../helpers/user/processDataUser';
 import { Request, Response } from 'express';
-import processDataUserUpdate from '../helpers/processDataUserUpdate';
+import processDataUserUpdate from '../helpers/user/processDataUserUpdate';
+import { User } from '../helpers/user/valideUser';
+import { z } from 'zod';
+import { UserUpdate } from '../helpers/user/valideUserUpdate';
+import { UserLogin } from '../helpers/user/valideLogin';
 
 class UserController {
 
   static async create(req: Request, res: Response) {
 
-    const dataUser: any = req.body;
-
     try {
 
-      const data: any = processDataUser(dataUser);
-      const email: string = req.body.email;
+      const dataUser: User = req.body;
+
+      const data = processDataUser(dataUser);
 
       const userExist = await prisma.user.findUnique({
-        where: { email },
+        where: { email: data.email },
       });
 
       if (!userExist) {
@@ -37,9 +40,15 @@ class UserController {
         message: 'Usuário já existe.'
       });
 
-    } catch (err: any) {
-      console.log(err);
-      res.status(400).json({ err: err.message });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          errors: err.errors.map(({ message, path }) => ({
+            message,
+            field: path.join("."),
+          })),
+        });
+      }
     };
   };
 
@@ -77,30 +86,14 @@ class UserController {
 
   static async update(req: Request, res: Response) {
 
-    let { id, nome, email, telefone, senha } = req.body;
-
-    if (email)
-      return res.json({
-        message: 'Você não pode atualizar o email.'
-      });
-
-    if (senha) {
-      const salt = bcrypt.genSaltSync(10);
-      senha = bcrypt.hashSync(senha, salt);
-    };
-
-    const dataUser = {
-      nome,
-      telefone,
-      senha
-    }
-
     try {
+      
+      const userUpdate: UserUpdate = req.body;
 
-      const data = processDataUserUpdate(dataUser);
+      const data = processDataUserUpdate(userUpdate);
 
       const user = await prisma.user.update({
-        where: { id },
+        where: { id: data.id },
         data,
         select: {
           nome: true,
@@ -131,16 +124,9 @@ class UserController {
 
   static async login(req: Request, res: Response) {
 
-    interface LoginUser{
-      email: string,
-      senha: string
-    }
-
     try {
 
-      const login: LoginUser = req.body;
-
-      console.log(login)
+      const login: UserLogin = req.body;
 
       const user = await prisma.user.findUnique({
         where: {

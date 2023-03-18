@@ -1,9 +1,6 @@
-import ShortUniqueId from 'short-unique-id';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
-import { fromZodError } from 'zod-validation-error';
 
-const userSchema = z.object({
+export const userSchema = z.object({
   id: z.optional(z.string()),
   nome: z.string({
     required_error: 'Nome é obrigatório.',
@@ -33,31 +30,4 @@ const userSchema = z.object({
   })
 })
 
-type User = z.input<typeof userSchema>;
-
-
-const processDataUser = (dataUser: User) => {
-
-  try {
-    const data = userSchema.parse(dataUser);
-
-    // Create password
-    const salt = bcrypt.genSaltSync(10);
-    data.senha = bcrypt.hashSync(dataUser.senha, salt);
-
-    // Gerar ID
-    const generateId = new ShortUniqueId({ length: 6 });
-
-    // Atibuir ID ao usuário
-    data.id = generateId();
-
-    return data;
-  } catch (err: any) {
-    throw new Error(fromZodError(err).message);
-  }
-
-}
-
-export = processDataUser;
-
-
+export type User = z.input<typeof userSchema>;

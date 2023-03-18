@@ -1,6 +1,7 @@
 import prisma  from '../database/prisma';
 import { Request, Response } from 'express';
-import processDataService from '../helpers/processDataService';
+import { Service, serviceSchema } from '../helpers/service/valideService';
+import { z } from 'zod';
 
 class BarberShopController {
 
@@ -54,15 +55,28 @@ class BarberShopController {
 
     try {
 
-      const service = processDataService(req.body);
+      const service: Service = req.body;
+      
+      const data: any = serviceSchema.parse(service);
 
       const createService = await prisma.service.create({ 
-        data: service
+        data,
        });
       return res.status(200).json(createService);
 
-    } catch (err: any) {
-      res.status(400).json({ err: err.message });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          errors: err.errors.map(({ message, path }) => ({
+            message,
+            field: path.join("."),
+          })),
+        });
+      }
+
+      return res.status(500).json({
+        message: "Internal server error",
+      });
     };
     
   };
@@ -80,8 +94,8 @@ class BarberShopController {
       });
       return res.status(200).json(services);
 
-    } catch (err: any) {
-      res.status(400).json({ err: err.message });
+    } catch (err) {
+      res.status(400).json({ err: err });
     };
   };
 
@@ -89,16 +103,26 @@ class BarberShopController {
 
     try {
 
-      const service = processDataService(req.body);
+      const service: Service =  req.body;
+
+      const data = serviceSchema.parse(service);
 
       const updateService = await prisma.service.update({
          where: { id: req.body.id },
-         data: service,
+         data,
       });
       return res.status(200).json(updateService);
 
-    } catch (err: any) {
-      res.status(400).json({ err: err.message});
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          errors: err.errors.map(({ message, path }) => ({
+            message,
+            field: path.join("."),
+          })),
+        });
+      }
+      return res.status(400).json({ err });
     };
   };
 

@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { fromZodError } from 'zod-validation-error';
 
-
-const schedulingSchema = z.object({
+export const schedulingSchema = z.object({
+  id: z.string({
+    invalid_type_error: 'id deve ser do tipo string'
+  }).optional(),
   data: z.string({
     required_error: 'Data é obrigatória.'
   }).min(7, {
@@ -10,6 +11,8 @@ const schedulingSchema = z.object({
   }),
   hora: z.string({
     required_error: 'Hora é obrigatória.'
+  }).min(4, {
+    message: 'Hora deve ter no mínimo 4 caracteres.'
   }),
   id_servico: z.number({
     required_error: 'O valor de id_serviço deve ser um array com pelo menos um serviço.',
@@ -19,19 +22,4 @@ const schedulingSchema = z.object({
   })
 })
 
-type Scheduling = z.infer<typeof schedulingSchema>;
-
-const processDataScheduling = (scheduling: Scheduling) => {
-
-  try {
-    const data = schedulingSchema.parse(scheduling);
-    return data;
-
-  } catch (err: any) {
-    throw new Error(fromZodError(err).message);
-  }
-  
-
-}
-
-export = processDataScheduling;
+export type Scheduling = z.infer<typeof schedulingSchema>;
