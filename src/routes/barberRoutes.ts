@@ -1,13 +1,13 @@
 import barberShopController from '../controllers/BarberShop';
-//import tokenAdmin from '../middlewares/tokenAdmin';
 import express from 'express';
+import authorize from '../middlewares/authorize';
 
 const barberRoutes = express.Router()
 
-// Token de administrativo para todas as rotas dashboard.
-//barberRoutes.use(tokenAdmin);
+//barberRoutes.use(authorize);
 
 barberRoutes.get('/agendamentos', barberShopController.schedulingsShow);
+barberRoutes.get('/buscar/agendamento', barberShopController.schedulingsSearch);
 barberRoutes.get('/usuarios', barberShopController.usersShow);
 
 barberRoutes.post('/servico/criar', barberShopController.serviceCreate);

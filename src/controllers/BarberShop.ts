@@ -35,6 +35,57 @@ class BarberShopController {
     };
   };
 
+  static async schedulingsSearch(req: Request, res: Response) {
+
+    try {
+
+      const schema = z.string({ 
+        invalid_type_error: 'Deve ser uma string.' 
+      }).min(8, { message: 'A data deve ter os 8 caracteres.'});
+
+      const data = schema.parse(req.body.data);
+    
+      const schedulingSearch = await prisma.scheduling.findMany({
+        where: {
+          data: {
+            equals: data,
+          },
+        },
+        include: {
+          servico: {
+            select: {
+              nome: true,
+              preco: true,
+            },
+          },
+          usuario: {
+            select: {
+              nome: true,
+              telefone: true,
+            },
+          },
+        },
+      });
+      if (schedulingSearch.length == 0)
+         return res.status(400).json({ message: 'Nenhum agendamento encontrado.' });
+
+      return res.status(200).json(schedulingSearch);
+
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          errors: err.errors.map(({ message, path }) => ({
+            message,
+            field: path.join("."),
+          })),
+        });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    };
+  };
+
   static async usersShow(req: Request, res: Response) {
     try {
       const users = await prisma.user.findMany({
@@ -59,9 +110,7 @@ class BarberShopController {
       
       const data: any = serviceSchema.parse(service);
 
-      const createService = await prisma.service.create({ 
-        data,
-       });
+      const createService = await prisma.service.create({ data });
       return res.status(200).json(createService);
 
     } catch (err) {
@@ -94,8 +143,8 @@ class BarberShopController {
       });
       return res.status(200).json(services);
 
-    } catch (err) {
-      res.status(400).json({ err: err });
+    } catch (err: any) {
+      res.status(400).json({ err: err.message });
     };
   };
 

@@ -3,7 +3,7 @@ import processDataUser from '../helpers/user/processDataUser';
 import verifyIdService from '../helpers/service/verifyIdService';
 import { Request, Response } from 'express';
 import { Scheduling, schedulingSchema } from '../helpers/scheduling/valideScheduling';
-import { z } from 'zod';
+import { unknown, z } from 'zod';
 import { User, userSchema } from '../helpers/user/valideUser';
 
 class SchedulingController {
@@ -14,7 +14,7 @@ class SchedulingController {
 
     try {
 
-      const user :User = {
+      const user: User = {
         nome,
         email,
         telefone,
@@ -28,9 +28,10 @@ class SchedulingController {
       }
 
       const dataScheduling = schedulingSchema.parse(scheduling);
-      const userParse: any = userSchema.parse(user);
-      const dataUser = processDataUser(userParse);
+      const dataUser = processDataUser(userSchema.parse(user));
       const idService = verifyIdService(id_servico);
+
+      console.log(typeof dataUser)
     
       const userExist = await prisma.user.findUnique({
         where: { email: dataUser.email },
@@ -55,7 +56,7 @@ class SchedulingController {
               id: dataUser.id,
               nome: dataUser.nome,
               email: dataUser.email,
-              telefone: dataUser.telefone,
+              telefone: dataUser.telefone.toString(),
               senha: dataUser.senha
             }
           },
@@ -81,7 +82,7 @@ class SchedulingController {
       });
       return res.status(200).json(createScheduling);
   
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           errors: err.errors.map(({ message, path }) => ({
@@ -91,7 +92,7 @@ class SchedulingController {
         });
       }
 
-      return res.status(400).json({ err });
+      return res.status(400).json({ err: err.message });
     };
   };
 
@@ -133,17 +134,8 @@ class SchedulingController {
 
      const idService = verifyIdService(scheduling.id_servico);
 
-     console.log(idService)
-
      const user = await prisma.scheduling.upsert({
       where: { usuarioId: scheduling.id },
-      update: {
-        data: scheduling.data,
-        hora: scheduling.hora,
-        servico: {
-          connect: idService,
-        },
-      },
       create: {
         id: scheduling.id,
         data: scheduling.data,
@@ -157,10 +149,18 @@ class SchedulingController {
           },
         },
       },
+      update: {
+        data: scheduling.data,
+        hora: scheduling.hora,
+        servico: {
+          set: [],
+          connect: idService,
+        },
+      },
      });
      return res.status(200).json(user);
 
-    } catch (err:any) {
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           errors: err.errors.map(({ message, path }) => ({
@@ -170,7 +170,7 @@ class SchedulingController {
         });
       }
 
-      return res.status(400).json({ err });
+      return res.status(400).json({ err: err.message });
     }; 
   };
  
@@ -183,9 +183,8 @@ class SchedulingController {
         message: 'Agendamento deletado com sucesso.' 
       });
 
-    } catch (err) {
-      console.log(err);
-      res.status(400).json(err);
+    } catch (err: any) {
+      res.status(400).json({err: err.message});
     };
   };
 };

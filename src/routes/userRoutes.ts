@@ -1,12 +1,8 @@
 import express from 'express';
 import SchedulingController from '../controllers/SchedulingController';
 import UserController from '../controllers/UserController';
-import tokenUser from '../middlewares/tokenUser';
 
 const userRoutes = express.Router();
-
-// Token para todas as rotas de GRUD.
-userRoutes.use(tokenUser);
 
 userRoutes.get('/agendamento/buscar', SchedulingController.show);
 userRoutes.put('/agendamento/atualizar', SchedulingController.update);

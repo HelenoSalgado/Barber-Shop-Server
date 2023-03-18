@@ -26,7 +26,13 @@ class UserController {
 
       if (!userExist) {
         const user = await prisma.user.create({
-          data,
+          data: {
+            id: data.id,
+            nome: data.nome,
+            email: data.email,
+            telefone: data.telefone.toString(),
+            senha: data.senha,
+          },
           select: {
             id: true,
             nome: true,
@@ -40,7 +46,7 @@ class UserController {
         message: 'Usuário já existe.'
       });
 
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           errors: err.errors.map(({ message, path }) => ({
@@ -48,7 +54,8 @@ class UserController {
             field: path.join("."),
           })),
         });
-      }
+      };
+      res.status(400).json({ err: err.message });
     };
   };
 
@@ -117,8 +124,8 @@ class UserController {
         message: 'Usuário deletado com sucesso.'
       });
 
-    } catch (err: any) {
-      res.status(400).json({ err: err.message });
+    } catch (err) {
+      res.status(400).json({ err });
     };
   };
 
@@ -133,6 +140,7 @@ class UserController {
           email: login.email
         },
       });
+
       if (!user)
         return res.json({ message: 'Usuário não existe.' });
 
@@ -146,7 +154,7 @@ class UserController {
       const SECRET: any = process.env.SECRET;
 
       const token = jwt.sign({
-        userId: user.id,
+        sub: user.id, role: user.role
       }, SECRET, {
         expiresIn: "3 days"
       });

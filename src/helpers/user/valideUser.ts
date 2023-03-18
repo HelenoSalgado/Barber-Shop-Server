@@ -19,7 +19,7 @@ export const userSchema = z.object({
   telefone: z.number({
     required_error: 'Telefone é obrigatório.',
     invalid_type_error: 'Não é do tipo numérico.'
-  }).transform(telefone => telefone.toString()),
+  }),
   senha: z.string({
     required_error: 'Senha é obrigatória.',
     invalid_type_error: 'A senha deve conter letras e números.'
@@ -27,7 +27,7 @@ export const userSchema = z.object({
     message: 'Senha deve ter entre 6 e 8 caracteres.'
   }).max(8, {
     message: 'Senha deve ter entre 6 e 8 caracteres.'
-  })
+  }),
 })
 
 export type User = z.input<typeof userSchema>;

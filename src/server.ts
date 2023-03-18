@@ -1,10 +1,12 @@
 import express from 'express';
+import tokenUser from './middlewares/tokenUser';
 //import tokenAdmin from './middlewares/tokenAdmin';
 const server = express();
 const PORT = 3333
 
 server.use(express.json())
 server.use('/api/v1/', require('./routes/publicRoutes'))
+//server.use(tokenUser);
 server.use('/api/v1/usuario', require('./routes/userRoutes'))
 server.use('/api/v1/dashboard', require('./routes/barberRoutes'))
 
