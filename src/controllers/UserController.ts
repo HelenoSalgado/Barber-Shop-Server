@@ -5,10 +5,11 @@ import dotenv from 'dotenv';
 import processDataUser from '../helpers/user/processDataUser';
 import { Request, Response } from 'express';
 import processDataUserUpdate from '../helpers/user/processDataUserUpdate';
-import { User } from '../helpers/user/valideUser';
 import { z } from 'zod';
-import { UserUpdate } from '../helpers/user/valideUserUpdate';
-import { UserLogin } from '../helpers/user/valideLogin';
+import { userUpdateSchema } from '../helpers/user/valideUserUpdate';
+import { userLoginSchema } from '../helpers/user/valideLogin';
+import { userSchema } from '../helpers/user/valideUser';
+dotenv.config();
 
 class UserController {
 
@@ -16,35 +17,33 @@ class UserController {
 
     try {
 
-      const dataUser: User = req.body;
+      const { id, nome, email, telefone, senha } = userSchema.parse(req.body);
 
-      const data = processDataUser(dataUser);
+      const process: any = processDataUser(id, senha);
 
       const userExist = await prisma.user.findUnique({
-        where: { email: data.email },
+        where: { email },
       });
 
-      if (!userExist) {
-        const user = await prisma.user.create({
-          data: {
-            id: data.id,
-            nome: data.nome,
-            email: data.email,
-            telefone: data.telefone.toString(),
-            senha: data.senha,
-          },
-          select: {
-            id: true,
-            nome: true,
-            email: true,
-            telefone: true
-          },
-        });
-        return res.json(user);
-      };
-      return res.json({
-        message: 'Usuário já existe.'
+      if (userExist)
+        return res.json({ message: 'Usuário já existe.' });
+
+      const user = await prisma.user.create({
+        data: {
+          id: process.id,
+          nome,
+          email,
+          telefone: telefone.toString(),
+          senha: process.senha,
+        },
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          telefone: true
+        },
       });
+      return res.json(user);
 
     } catch (err: any) {
       if (err instanceof z.ZodError) {
@@ -95,13 +94,17 @@ class UserController {
 
     try {
       
-      const userUpdate: UserUpdate = req.body;
+      const { id, nome, telefone, senha } = userUpdateSchema.parse(req.body);
 
-      const data = processDataUserUpdate(userUpdate);
+      const process = processDataUserUpdate(senha);
 
       const user = await prisma.user.update({
-        where: { id: data.id },
-        data,
+        where: { id },
+        data: {
+          nome,
+          telefone,
+          senha: process.senha
+        },
         select: {
           nome: true,
           email: true,
@@ -133,11 +136,11 @@ class UserController {
 
     try {
 
-      const login: UserLogin = req.body;
+      const { email, senha } = userLoginSchema.parse(req.body);
 
       const user = await prisma.user.findUnique({
         where: {
-          email: login.email
+          email
         },
       });
 
@@ -145,12 +148,12 @@ class UserController {
         return res.json({ message: 'Usuário não existe.' });
 
       // Check password
-      const passwordChecked = bcrypt.compareSync(login.senha, user.senha);
+      const passwordChecked = bcrypt.compareSync(senha, user.senha);
 
       if (!passwordChecked)
         return res.status(401).json({ message: 'Falha na Autenticação.' });
 
-      // Permisão
+      // Permissão
       const SECRET: any = process.env.SECRET;
 
       const token = jwt.sign({

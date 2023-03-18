@@ -2,62 +2,47 @@ import prisma from '../database/prisma';
 import processDataUser from '../helpers/user/processDataUser';
 import verifyIdService from '../helpers/service/verifyIdService';
 import { Request, Response } from 'express';
-import { Scheduling, schedulingSchema } from '../helpers/scheduling/valideScheduling';
-import { unknown, z } from 'zod';
-import { User, userSchema } from '../helpers/user/valideUser';
+import { schedulingSchema } from '../helpers/scheduling/valideScheduling';
+import { z } from 'zod';
+import { userSchema } from '../helpers/user/valideUser';
 
 class SchedulingController {
 
   static async create(req: Request, res: Response) {
 
-    const { nome, email, telefone, id_servico, data, hora, senha } = req.body;
-
     try {
 
-      const user: User = {
-        nome,
-        email,
-        telefone,
-        senha
-      }
-  
-      const scheduling: Scheduling = {
-        data,
-        hora,
-        id_servico
-      }
+      const { id, nome, email, telefone, senha } = userSchema.parse(req.body);
+      const { data, hora, id_servico } = schedulingSchema.parse(req.body);
 
-      const dataScheduling = schedulingSchema.parse(scheduling);
-      const dataUser = processDataUser(userSchema.parse(user));
+      const process: any = processDataUser(id, senha);
       const idService = verifyIdService(id_servico);
 
-      console.log(typeof dataUser)
-    
       const userExist = await prisma.user.findUnique({
-        where: { email: dataUser.email },
+        where: { email },
       });
 
       if (userExist){
         return res.status(200).json({
-          message: 'Usuário já existe, faça login para continuar.' 
+          message: 'Usuário já existe.' 
         });
       };
 
       const createScheduling = await prisma.scheduling.create({
          data: {
-          id: dataUser.id,
-          data: dataScheduling.data,
-          hora: dataScheduling.hora,
+          id: process.id,
+          data,
+          hora,
           servico: {
             connect: idService, 
           },
           usuario: {
             create: {
-              id: dataUser.id,
-              nome: dataUser.nome,
-              email: dataUser.email,
-              telefone: dataUser.telefone.toString(),
-              senha: dataUser.senha
+              id: process.id,
+              nome,
+              email,
+              telefone: telefone.toString(),
+              senha: process.senha
             }
           },
          },
@@ -128,30 +113,28 @@ class SchedulingController {
 
     try {
 
-     const scheduling: Scheduling = req.body;
+     const { id, data, hora, id_servico } = schedulingSchema.parse(req.body);
 
-     schedulingSchema.parse(scheduling);
-
-     const idService = verifyIdService(scheduling.id_servico);
+     const idService = verifyIdService(id_servico);
 
      const user = await prisma.scheduling.upsert({
-      where: { usuarioId: scheduling.id },
+      where: { usuarioId: id },
       create: {
-        id: scheduling.id,
-        data: scheduling.data,
-        hora: scheduling.data,
+        id,
+        data,
+        hora,
         servico: {
           connect: idService,
         },
         usuario: {
           connect: {
-            id: scheduling.id
+            id,
           },
         },
       },
       update: {
-        data: scheduling.data,
-        hora: scheduling.hora,
+        data,
+        hora,
         servico: {
           set: [],
           connect: idService,

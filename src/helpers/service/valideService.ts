@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const serviceSchema = z.object({
+  id: z.number().optional(),
   nome: z.string({
     required_error: 'Nome do serviço é obrigatório.',
     invalid_type_error: 'Nome deve ser uma string.'
@@ -22,4 +23,4 @@ export const serviceSchema = z.object({
   }).max(100),
 })
 
-export type Service = z.infer<typeof serviceSchema>;
+type Service = z.infer<typeof serviceSchema>;

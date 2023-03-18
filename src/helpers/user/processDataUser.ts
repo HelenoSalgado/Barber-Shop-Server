@@ -1,14 +1,16 @@
 import ShortUniqueId from 'short-unique-id';
 import bcrypt from 'bcryptjs';
-import { User, userSchema } from './valideUser';
 
-const processDataUser = (dataUser: User) => {
+const processDataUser = (id: unknown, senha: string) => {
   
-    const data = userSchema.parse(dataUser);
+    const data = {
+        id,
+        senha
+    };
 
     // Create password
     const salt = bcrypt.genSaltSync(10);
-    data.senha = bcrypt.hashSync(dataUser.senha, salt);
+    data.senha = bcrypt.hashSync(data.senha, salt);
 
     // Gerar ID
     const generateId = new ShortUniqueId({ length: 6 });

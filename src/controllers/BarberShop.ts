@@ -1,6 +1,6 @@
 import prisma  from '../database/prisma';
 import { Request, Response } from 'express';
-import { Service, serviceSchema } from '../helpers/service/valideService';
+import { serviceSchema } from '../helpers/service/valideService';
 import { z } from 'zod';
 
 class BarberShopController {
@@ -43,7 +43,7 @@ class BarberShopController {
         invalid_type_error: 'Deve ser uma string.' 
       }).min(8, { message: 'A data deve ter os 8 caracteres.'});
 
-      const data = schema.parse(req.body.data);
+      const data = schema.parse(req.body);
     
       const schedulingSearch = await prisma.scheduling.findMany({
         where: {
@@ -106,11 +106,11 @@ class BarberShopController {
 
     try {
 
-      const service: Service = req.body;
+      const service = serviceSchema.parse(req.body);
       
-      const data: any = serviceSchema.parse(service);
-
-      const createService = await prisma.service.create({ data });
+      const createService = await prisma.service.create({ 
+        data: service,
+      });
       return res.status(200).json(createService);
 
     } catch (err) {
@@ -152,13 +152,11 @@ class BarberShopController {
 
     try {
 
-      const service: Service =  req.body;
-
-      const data = serviceSchema.parse(service);
+      const service =  serviceSchema.parse(req.body);
 
       const updateService = await prisma.service.update({
-         where: { id: req.body.id },
-         data,
+         where: { id: service.id },
+         data: service,
       });
       return res.status(200).json(updateService);
 

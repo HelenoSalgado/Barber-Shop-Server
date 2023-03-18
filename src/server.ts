@@ -1,15 +1,16 @@
 import express from 'express';
-import tokenUser from './middlewares/tokenUser';
-//import tokenAdmin from './middlewares/tokenAdmin';
+import dotenv from 'dotenv';
 const server = express();
-const PORT = 3333
+dotenv.config();
+const PORT = process.env.PORT;
+
+console.log(PORT)
 
 server.use(express.json())
 server.use('/api/v1/', require('./routes/publicRoutes'))
-//server.use(tokenUser);
 server.use('/api/v1/usuario', require('./routes/userRoutes'))
 server.use('/api/v1/dashboard', require('./routes/barberRoutes'))
 
 server.listen(PORT, () => {
-    console.log("Server started on port 3333!");
+    console.log("Server started on port " + PORT);
 })

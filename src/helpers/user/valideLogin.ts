@@ -11,4 +11,4 @@ export const userLoginSchema = z.object({
   })
 })
 
-export type UserLogin = z.input<typeof userLoginSchema>;
+type UserLogin = z.input<typeof userLoginSchema>;

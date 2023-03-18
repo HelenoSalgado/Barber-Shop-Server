@@ -22,4 +22,4 @@ export const schedulingSchema = z.object({
   })
 })
 
-export type Scheduling = z.infer<typeof schedulingSchema>;
+type Scheduling = z.infer<typeof schedulingSchema>;

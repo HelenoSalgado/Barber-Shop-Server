@@ -16,4 +16,4 @@ export const userUpdateSchema = z.object({
   senha: z.any(optional(string())),
 })
 
-export type UserUpdate = z.input<typeof userUpdateSchema>;
+type UserUpdate = z.input<typeof userUpdateSchema>;

@@ -1,10 +1,10 @@
 import barberShopController from '../controllers/BarberShop';
 import express from 'express';
-import authorize from '../middlewares/authorize';
+import tokenAdmin from '../middlewares/tokenAdmin';
 
 const barberRoutes = express.Router()
 
-//barberRoutes.use(authorize);
+//barberRoutes.use(tokenAdmin);
 
 barberRoutes.get('/agendamentos', barberShopController.schedulingsShow);
 barberRoutes.get('/buscar/agendamento', barberShopController.schedulingsSearch);

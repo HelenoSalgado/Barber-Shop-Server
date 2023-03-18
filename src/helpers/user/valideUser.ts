@@ -30,4 +30,4 @@ export const userSchema = z.object({
   }),
 })
 
-export type User = z.input<typeof userSchema>;
+type User = z.input<typeof userSchema>;

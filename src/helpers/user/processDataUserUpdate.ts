@@ -1,13 +1,14 @@
 import bcrypt from 'bcryptjs';
-import { UserUpdate, userUpdateSchema } from './valideUserUpdate';
 
-const processDataUserUpdate = (dataUser: UserUpdate) => {
+const processDataUserUpdate = (senha: string) => {
 
-    const data = userUpdateSchema.parse(dataUser);
+    const data = {
+        senha
+    };
 
     // Create password
     const salt = bcrypt.genSaltSync(10);
-    data.senha = bcrypt.hashSync(dataUser.senha, salt);
+    data.senha = bcrypt.hashSync(data.senha, salt);
 
     return data;
 
