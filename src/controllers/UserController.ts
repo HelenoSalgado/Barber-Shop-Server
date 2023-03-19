@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'; 
 import { Request, Response } from 'express';
-import processDataUserUpdate from '../helpers/user/processDataUserUpdate';
 import { z } from 'zod';
 import { userUpdateSchema } from '../helpers/user/valideUserUpdate';
 import { userLoginSchema } from '../helpers/user/valideLogin';
@@ -97,14 +96,14 @@ class UserController {
       
       const { id, nome, telefone, senha } = userUpdateSchema.parse(req.body);
 
-      const process = processDataUserUpdate(senha);
+      const senhahash = generateSenha(senha);
 
       const user = await prisma.user.update({
         where: { id },
         data: {
           nome,
           telefone,
-          senha: process.senha
+          senha: senhahash
         },
         select: {
           nome: true,
