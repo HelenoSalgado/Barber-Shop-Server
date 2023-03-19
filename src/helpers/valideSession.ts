@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const userLoginSchema = z.object({
+export const userSessionSchema = z.object({
   email: z.string({
     required_error: 'Email é obrigatório.',
   }).email({
@@ -11,4 +11,4 @@ export const userLoginSchema = z.object({
   })
 })
 
-type UserLogin = z.input<typeof userLoginSchema>;
+type UserLogin = z.input<typeof userSessionSchema>;
