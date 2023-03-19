@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 export const userSchema = z.object({
-  id: z.optional(z.string()),
   nome: z.string({
     required_error: 'Nome é obrigatório.',
     invalid_type_error: 'Não é um nome válido.'

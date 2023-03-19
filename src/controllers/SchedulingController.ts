@@ -1,10 +1,10 @@
 import prisma from '../database/prisma';
-import processDataUser from '../helpers/user/processDataUser';
+import { generateId, generateSenha } from '../helpers/user/processDataUser';
 import verifyIdService from '../helpers/service/verifyIdService';
 import { Request, Response } from 'express';
 import { schedulingSchema } from '../helpers/scheduling/valideScheduling';
 import { z } from 'zod';
-import { userSchema } from '../helpers/user/valideUser';
+import { schedulingUpdateSchema } from '../helpers/scheduling/valideUpdateScheduling';
 
 class SchedulingController {
 
@@ -12,10 +12,10 @@ class SchedulingController {
 
     try {
 
-      const { id, nome, email, telefone, senha } = userSchema.parse(req.body);
-      const { data, hora, id_servico } = schedulingSchema.parse(req.body);
+      const { nome, email, telefone, senha, data, hora, id_servico } = schedulingSchema.parse(req.body);
 
-      const process: any = processDataUser(id, senha);
+      const senhahash = generateSenha(senha);
+      const id = generateId();
       const idService = verifyIdService(id_servico);
 
       const userExist = await prisma.user.findUnique({
@@ -30,7 +30,7 @@ class SchedulingController {
 
       const createScheduling = await prisma.scheduling.create({
          data: {
-          id: process.id,
+          id,
           data,
           hora,
           servico: {
@@ -38,11 +38,11 @@ class SchedulingController {
           },
           usuario: {
             create: {
-              id: process.id,
+              id,
               nome,
               email,
               telefone: telefone.toString(),
-              senha: process.senha
+              senha: senhahash
             }
           },
          },
@@ -113,7 +113,7 @@ class SchedulingController {
 
     try {
 
-     const { id, data, hora, id_servico } = schedulingSchema.parse(req.body);
+     const { id, data, hora, id_servico } = schedulingUpdateSchema.parse(req.body);
 
      const idService = verifyIdService(id_servico);
 

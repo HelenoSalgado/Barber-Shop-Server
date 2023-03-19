@@ -2,13 +2,13 @@ import prisma from '../database/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'; 
-import processDataUser from '../helpers/user/processDataUser';
 import { Request, Response } from 'express';
 import processDataUserUpdate from '../helpers/user/processDataUserUpdate';
 import { z } from 'zod';
 import { userUpdateSchema } from '../helpers/user/valideUserUpdate';
 import { userLoginSchema } from '../helpers/user/valideLogin';
 import { userSchema } from '../helpers/user/valideUser';
+import { generateId, generateSenha } from '../helpers/user/processDataUser';
 dotenv.config();
 
 class UserController {
@@ -17,9 +17,10 @@ class UserController {
 
     try {
 
-      const { id, nome, email, telefone, senha } = userSchema.parse(req.body);
+      const { nome, email, telefone, senha } = userSchema.parse(req.body);
 
-      const process: any = processDataUser(id, senha);
+      const senhahash = generateSenha(senha);
+      const id = generateId();
 
       const userExist = await prisma.user.findUnique({
         where: { email },
@@ -30,11 +31,11 @@ class UserController {
 
       const user = await prisma.user.create({
         data: {
-          id: process.id,
+          id,
           nome,
           email,
           telefone: telefone.toString(),
-          senha: process.senha,
+          senha: senhahash,
         },
         select: {
           id: true,

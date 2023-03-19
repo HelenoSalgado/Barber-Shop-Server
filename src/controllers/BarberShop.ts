@@ -155,7 +155,7 @@ class BarberShopController {
       const service =  serviceSchema.parse(req.body);
 
       const updateService = await prisma.service.update({
-         where: { id: service.id },
+         where: { id: req.body.id },
          data: service,
       });
       return res.status(200).json(updateService);

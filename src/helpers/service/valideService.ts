@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 export const serviceSchema = z.object({
-  id: z.number().optional(),
   nome: z.string({
     required_error: 'Nome do serviço é obrigatório.',
     invalid_type_error: 'Nome deve ser uma string.'

@@ -1,27 +1,20 @@
 import ShortUniqueId from 'short-unique-id';
 import bcrypt from 'bcryptjs';
 
-const processDataUser = (id: unknown, senha: string) => {
-  
-    const data = {
-        id,
-        senha
-    };
+export const generateSenha = (senha: string) => {
 
-    // Create password
     const salt = bcrypt.genSaltSync(10);
-    data.senha = bcrypt.hashSync(data.senha, salt);
-
-    // Gerar ID
-    const generateId = new ShortUniqueId({ length: 6 });
-
-    // Atibuir ID ao usuário
-    data.id = generateId();
-
-    return data;
+    senha = bcrypt.hashSync(senha, salt);
+    return senha;
  
 }
 
-export = processDataUser;
+export const generateId = () => {
+
+    const generateId = new ShortUniqueId({ length: 6 });
+    return generateId();
+
+};
+
 
 
