@@ -102,7 +102,7 @@ class UserController {
         where: { id },
         data: {
           nome,
-          telefone,
+          telefone: telefone.toString(),
           senha: senhahash
         },
         select: {

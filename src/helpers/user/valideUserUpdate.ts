@@ -12,7 +12,7 @@ export const userUpdateSchema = z.object({
   telefone: z.number({
     required_error: 'Telefone é obrigatório.',
     invalid_type_error: 'Não é do tipo numérico.'
-  }).transform(telefone => telefone.toString()),
+  }),
   senha: z.any(optional(string())),
 })
 
