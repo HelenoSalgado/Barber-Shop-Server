@@ -30,10 +30,10 @@ export = {
             return res.status(401).json({ message: 'Falha na Autenticação.' });
     
           // Permissão
-          const SECRET: any = process.env.SECRET;
+          const SECRET: string | undefined = process.env.SECRET;
     
           const token = jwt.sign({
-            sub: user.id, role: user.role
+            id: user.id, role: user.role
           }, SECRET, {
             expiresIn: "3 days"
           });
